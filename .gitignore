@@ -1,0 +1,10 @@
+# Abaikan Virtual Environment
+env/
+.venv/
+
+# Abaikan file cache Python
+__pycache__/
+
+# Abaikan file cache Windows/Mac
+.DS_Store
+Thumbs.db
