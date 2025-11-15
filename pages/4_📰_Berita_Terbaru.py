@@ -1,33 +1,45 @@
 import streamlit as st
-from newsapi import NewsApiClient # <-- Menggunakan NewsAPI
+import feedparser # <-- Menggunakan feedparser
 import time
 
 # Impor fungsi yang kita butuhkan dari "kotak alat"
 try:
     from utils import (
-        proses_google # <-- Menggunakan 'proses_google' yang baru
+        proses_google 
     )
 except ImportError:
     st.error("Gagal memuat modul 'utils.py'. Pastikan file tersebut ada di folder utama C:\\cek_fakta")
     st.stop()
 
-# --- KONFIGURASI API ---
-# PENTING: Kita akan baca dari 'Secrets' Streamlit Cloud
-try:
-    NEWS_API_KEY = st.secrets["NEWS_API_KEY"]
-except KeyError:
-    st.error("API Key untuk NewsAPI belum diatur! (Cek 'Manage app' > 'Secrets')")
-    st.stop()
-# ------------------------
+# --- FUNGSI BARU UNTUK MENGAMBIL BERITA ---
+@st.cache_data(ttl=600) # Cache hasil selama 10 menit
+def get_google_news(keyword=""):
+    """
+    Mengambil berita dari Google News Indonesia via RSS Feed.
+    Tidak perlu API key.
+    """
+    base_url = "https://news.google.com/rss"
+    
+    # --- PERBAIKAN UNTUK CLOUD ---
+    # Kita HAPUS 'gl=ID' (lokasi) untuk menghindari bentrok IP
+    # Kita SISAKAN 'hl=id' (bahasa)
+    if keyword:
+        # Jika ada keyword, kita cari
+        url = f"{base_url}/search?q={keyword}&hl=id&ceid=ID:id"
+    else:
+        # Jika tidak, ambil berita utama
+        url = f"{base_url}?hl=id&ceid=ID:id"
+    # -----------------------------
+        
+    try:
+        feed = feedparser.parse(url)
+        return feed.entries
+    except Exception as e:
+        st.error(f"Error mengambil data dari Google News RSS: {e}")
+        return []
 
-# Inisialisasi News API
-try:
-    newsapi = NewsApiClient(api_key=NEWS_API_KEY)
-except Exception as e:
-    st.error(f"Gagal menginisialisasi News API. Apakah API Key sudah benar? Error: {e}")
-    st.stop()
-
-st.header("Berita Terbaru & Referensi Cek Fakta")
+# --- UI (TAMPILAN) ---
+st.header("Berita Terbaru dari Google News Indonesia")
 st.markdown("Cari berita terbaru di Indonesia dan lihat apakah sudah ada verifikasi fakta terkait.")
 st.markdown("---")
 
@@ -37,44 +49,32 @@ keyword = st.text_input("Masukkan kata kunci (opsional) atau biarkan kosong untu
 if st.button("Cari Berita", type="primary"):
     
     with st.spinner(f"Mencari berita teratas dari Indonesia..."):
-        try:
-            # --- INI ADALAH ENDPOINT YANG BENAR ---
-            all_articles = newsapi.get_top_headlines(
-                q=keyword,
-                country='id', # <-- Ini didukung oleh 'get_top_headlines'
-                page_size=10
-            )
-            # -----------------------------------
-        except Exception as e:
-            # Ini akan menangkap jika API key Anda salah
-            st.error(f"Error mengambil data dari NewsAPI: {e}")
-            st.warning("Pastikan API Key Anda sudah benar di 'Secrets' (Manage app).")
-            st.stop()
+        
+        # --- PANGGIL FUNGSI GOOGLE NEWS ---
+        articles = get_google_news(keyword)
 
         if keyword:
             st.subheader(f"Hasil Pencarian untuk: '{keyword}'")
         else:
-            st.subheader("Berita Teratas Indonesia Saat Ini")
+            st.subheader("Berita Teratas (Bahasa Indonesia)")
         
-        if not all_articles['articles']:
+        if not articles:
             st.error("Tidak ada artikel yang ditemukan.")
         
-        for article in all_articles['articles']:
-            title = article['title']
-            source = article['source']['name']
-            url = article['url']
+        # Batasi hanya 10 artikel
+        for article in articles[:10]:
+            title = article.title
+            source = article.source.title
+            url = article.link
             
             with st.expander(f"**{title}** (Sumber: {source})"):
-                description = article.get('description', 'Tidak ada deskripsi.')
-                if not description:
-                    description = "Tidak ada deskripsi."
-
-                st.markdown(f"**Ringkasan:** {description}")
+                st.markdown(f"**Tanggal Terbit:** {article.get('published', 'Tidak diketahui')}")
                 st.markdown(f"[Baca artikel asli]({url})", unsafe_allow_html=True)
                 
+                # --- Fitur Verifikasi Google Fact Check ---
                 with st.spinner("Mengecek Google Fact Check untuk artikel ini..."):
                     time.sleep(0.5) 
-                    hasil_google = proses_google(title) # Panggil fungsi PROSESOR
+                    hasil_google = proses_google(title)
                 
                 if hasil_google == "HOAKS":
                     st.error("Ditemukan verifikasi: **HOAKS** (Berdasarkan database Google Fact Check).")
