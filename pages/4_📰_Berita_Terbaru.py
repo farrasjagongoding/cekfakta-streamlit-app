@@ -2,93 +2,140 @@ import streamlit as st
 import feedparser
 import time
 
-# ================================
-# IMPORT FUNGSI DARI UTILS
-# ================================
+# Import fungsi dari utils
 try:
     from utils import proses_google
 except ImportError:
-    st.error("Gagal memuat modul 'utils.py'. Pastikan file tersebut berada di folder utama.")
+    st.error("Gagal memuat modul utils.py. Pastikan file tersimpan di folder C:\\cek_fakta")
     st.stop()
 
-# ================================
-# FUNGSI AMBIL BERITA GOOGLE NEWS
-# ================================
+# ==========================
+#   DAFTAR RSS INDONESIA
+# ==========================
+RSS_SOURCES = [
+    # CNN Indonesia
+    "https://www.cnnindonesia.com/nasional/rss",
+    "https://www.cnnindonesia.com/ekonomi/rss",
+    "https://www.cnnindonesia.com/teknologi/rss",
+
+    # Detik
+    "https://rss.detik.com/index.php/detikcom",
+    "https://rss.detik.com/index.php/detiknews",
+
+    # Kompas
+    "https://news.kompas.com/rss",
+    "https://news.kompas.com/rss/nasional",
+
+    # Tempo
+    "https://rss.tempo.co/nasional",
+    "https://rss.tempo.co/metro",
+
+    # Viva
+    "https://www.viva.co.id/rss/politik",
+
+    # Liputan6
+    "https://feed.liputan6.com/news",
+
+    # Okezone
+    "https://sindikasi.okezone.com/index.php/rss/0/0/all",
+
+    # JawaPos
+    "https://www.jawapos.com/rss",
+
+    # Antara News
+    "https://www.antaranews.com/rss/top-news"
+]
+
+
+# ==============================================
+#   FUNGSI PENGAMBILAN BERITA MULTI PORTAL
+# ==============================================
 @st.cache_data(ttl=600)
-def get_google_news(keyword: str = ""):
-    """
-    Mengambil berita dari Google News Indonesia via RSS.
-    Bebas API key. Aman di Streamlit Cloud.
-    """
-    base_url = "https://news.google.com/rss"
+def get_news(keyword=""):
+    all_articles = []
 
-    # Gunakan bahasa Indonesia saja (hindari gl=ID karena bentrok IP)
-    if keyword:
-        url = f"{base_url}/search?q={keyword}&hl=id&ceid=ID:id"
-    else:
-        url = f"{base_url}?hl=id&ceid=ID:id"
+    for url in RSS_SOURCES:
+        try:
+            feed = feedparser.parse(url)
 
-    try:
-        feed = feedparser.parse(url)
+            for entry in feed.entries:
+                title = entry.title if "title" in entry else "Tanpa Judul"
+                link = entry.link if "link" in entry else "#"
+                source = entry.get("source", {}).get("title", url)
 
-        # Jika RSS gagal parse, feed.entries akan kosong → aman
-        return feed.entries
-    except Exception as e:
-        st.error(f"Gagal mengambil data dari Google News RSS: {e}")
-        return []
+                # Filter berdasarkan keyword jika ada
+                if keyword:
+                    if keyword.lower() in title.lower():
+                        all_articles.append({
+                            "title": title,
+                            "link": link,
+                            "published": entry.get("published", "Tidak diketahui"),
+                            "source": source
+                        })
+                else:
+                    all_articles.append({
+                        "title": title,
+                        "link": link,
+                        "published": entry.get("published", "Tidak diketahui"),
+                        "source": source
+                    })
 
-# ================================
-# UI / TAMPILAN
-# ================================
-st.header("Berita Terbaru dari Google News Indonesia")
-st.markdown("Cari berita terbaru di Indonesia dan lihat apakah sudah ada verifikasi fakta terkait.")
+        except Exception:
+            pass  # Jika 1 RSS gagal fetch, lanjutkan
+
+    return all_articles
+
+
+# ======================
+#     UI TAMPILAN
+# ======================
+st.header("Berita Terbaru dari Berbagai Portal Indonesia")
+st.markdown("Cari berita terbaru dari berbagai platform nasional dan cek apakah sudah ada verifikasi faktanya.")
 st.markdown("---")
 
-st.subheader("Cari Berita Teratas di Indonesia")
-keyword = st.text_input("Masukkan kata kunci (opsional) atau biarkan kosong untuk berita teratas:")
+st.subheader("Cari Berita di Indonesia")
+keyword = st.text_input("Masukkan kata kunci (opsional). Biarkan kosong untuk semua berita:")
 
 if st.button("Cari Berita", type="primary"):
 
-    with st.spinner("Mengambil berita..."):
-        articles = get_google_news(keyword)
+    with st.spinner("Mengambil berita terbaru dari berbagai portal Indonesia..."):
+        articles = get_news(keyword)
 
-    # Judul Hasil
     if keyword:
-        st.subheader(f"Hasil Pencarian untuk: **{keyword}**")
+        st.subheader(f"Hasil Pencarian untuk: '{keyword}'")
     else:
-        st.subheader("Berita Teratas (Bahasa Indonesia)")
+        st.subheader("Berita Terbaru dari Semua Portal")
 
-    # Tidak ada artikel ditemukan
     if not articles:
         st.error("Tidak ada artikel yang ditemukan.")
-        st.stop()
+    else:
+        # Batasi 20 berita teratas untuk jaga performa
+        for article in articles[:20]:
+            title = article["title"]
+            source = article["source"]
+            url = article["link"]
+            published = article["published"]
 
-    # Tampilkan 10 berita teratas
-    for article in articles[:10]:
-        title = article.title
-        source = article.source.title if hasattr(article, "source") else "Tidak diketahui"
-        link = article.link
-        published = article.get("published", "Tidak diketahui")
+            with st.expander(f"📰 {title} — *{source}*"):
+                st.markdown(f"**Tanggal:** {published}")
+                st.markdown(f"[Baca artikel asli]({url})", unsafe_allow_html=True)
 
-        with st.expander(f"**{title}** — *{source}*"):
-            st.markdown(f"**Tanggal Terbit:** {published}")
-            st.markdown(f"[Baca Artikel Asli]({link})")
+                # Cek Fact Check
+                with st.spinner("Mengecek Google Fact Check..."):
+                    time.sleep(0.5)
+                    hasil = proses_google(title)
 
-            # Fact Check Google
-            with st.spinner("Mengecek Google Fact Check..."):
-                time.sleep(0.5)
-                hasil_google = proses_google(title)
-
-            if hasil_google == "HOAKS":
-                st.error("Ditemukan verifikasi: **HOAKS** (Google Fact Check).")
-            elif hasil_google == "FAKTA":
-                st.success("Ditemukan verifikasi: **FAKTA** (Google Fact Check).")
-            else:
-                st.info("Belum ada verifikasi fakta untuk artikel ini.")
+                if hasil == "HOAKS":
+                    st.error("⚠️ Berita ini terverifikasi **HOAKS** menurut Google Fact Check.")
+                elif hasil == "FAKTA":
+                    st.success("✔️ Berita ini terverifikasi **FAKTA** menurut Google Fact Check.")
+                else:
+                    st.info("ℹ️ Belum ada verifikasi fakta untuk judul berita ini.")
 
 else:
-    st.info("Masukkan kata kunci lalu klik 'Cari Berita'.")
-
+    st.info("Masukkan kata kunci atau langsung klik tombol 'Cari Berita'.")
+    
 st.markdown("---")
+
 if st.button("Kembali ke Halaman Utama"):
     st.switch_page("Home.py")
