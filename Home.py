@@ -1,5 +1,4 @@
 import streamlit as st
-# st.switch_page() adalah fungsi baru yang kita butuhkan
 from streamlit.runtime.scriptrunner import get_script_run_ctx
 
 # --- 1. KONFIGURASI HALAMAN ---
@@ -146,7 +145,6 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 # --- 3. BAGIAN ATAS (HERO SECTION) ---
-# (Tidak berubah)
 st.markdown(
     """
     <div class="hero-container">
@@ -158,8 +156,6 @@ st.markdown(
 )
 
 # --- TOMBOL NAVIGASI HERO (FUNGSIONAL) ---
-# --- PERBAIKAN DI SINI ---
-# Kita bungkus tombol di div kustom agar bisa di-style
 st.markdown('<div class="hero-button-container">', unsafe_allow_html=True)
 
 # KEMBALIKAN st.columns UNTUK MENENGKAHKAN TOMBOL
@@ -180,7 +176,6 @@ st.write("") # Spasi
 st.write("") # Spasi
 
 # --- 4. BAGIAN FITUR (DENGAN TOMBOL NAVIGASI) ---
-# (Kode ini sudah benar, tidak saya ubah)
 st.header("Layanan Kami", divider="blue")
 st.write("")
 
@@ -235,7 +230,7 @@ with col3_fitur:
 st.write("") # Spasi
 st.write("") # Spasi
 
-# --- 5. BAGIAN PENUTUP (Tidak berubah) ---
+# --- 5. BAGIAN PENUTUP  ---
 st.header("Mengapa Verifikasi Penting?", divider="blue")
 st.write("")
 
@@ -264,7 +259,7 @@ with right_col:
 st.write("") # Spasi
 st.write("") # Spasi
 
-# --- 6. FOOTER (Tidak berubah) ---
+# --- 6. FOOTER ---
 st.markdown(
     """
     <div class="footer">

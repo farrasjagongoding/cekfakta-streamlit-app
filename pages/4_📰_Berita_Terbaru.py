@@ -9,47 +9,40 @@ except ImportError:
     st.error("Gagal memuat modul utils.py. Pastikan file tersimpan di folder C:\\cek_fakta")
     st.stop()
 
-# ==========================
 #   DAFTAR RSS INDONESIA
-# ==========================
 RSS_SOURCES = [
-    # CNN Indonesia
+    # 1. CNN Indonesia (Nasional)
     "https://www.cnnindonesia.com/nasional/rss",
-    "https://www.cnnindonesia.com/ekonomi/rss",
-    "https://www.cnnindonesia.com/teknologi/rss",
 
-    # Detik
-    "https://rss.detik.com/index.php/detikcom",
+    # 2. Detik (News - Berita Utama)
     "https://rss.detik.com/index.php/detiknews",
 
-    # Kompas
-    "https://news.kompas.com/rss",
+    # 3. Kompas (Nasional)
     "https://news.kompas.com/rss/nasional",
 
-    # Tempo
+    # 4. Tempo (Nasional)
     "https://rss.tempo.co/nasional",
-    "https://rss.tempo.co/metro",
 
-    # Viva
-    "https://www.viva.co.id/rss/politik",
+    # 5. Viva (Berita Utama)
+    "https://www.viva.co.id/rss/berita-utama.rss",
 
-    # Liputan6
+    # 6. Liputan6 (Berita Terbaru)
     "https://feed.liputan6.com/news",
 
-    # Okezone
+    # 7. Okezone (Berita Utama)
     "https://sindikasi.okezone.com/index.php/rss/0/0/all",
 
-    # JawaPos
+    # 8. JawaPos (Berita Utama)
     "https://www.jawapos.com/rss",
 
-    # Antara News
-    "https://www.antaranews.com/rss/top-news"
+    # 9. Antara News (Berita Terkini)
+    "https://www.antaranews.com/rss/terkini",
+    
+    # 10. Tribunnews (Berita Utama)
+    "https://www.tribunnews.com/rss"
 ]
 
-
-# ==============================================
 #   FUNGSI PENGAMBILAN BERITA MULTI PORTAL
-# ==============================================
 @st.cache_data(ttl=600)
 def get_news(keyword=""):
     all_articles = []
@@ -86,9 +79,7 @@ def get_news(keyword=""):
     return all_articles
 
 
-# ======================
 #     UI TAMPILAN
-# ======================
 st.header("Berita Terbaru dari Berbagai Portal Indonesia")
 st.markdown("Cari berita terbaru dari berbagai platform nasional dan cek apakah sudah ada verifikasi faktanya.")
 st.markdown("---")

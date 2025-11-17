@@ -10,7 +10,7 @@ try:
     from file_parser import read_pdf, read_docx, read_image_ocr
 except ImportError as e:
     st.error(f"FATAL ERROR: Gagal mengimpor modul.")
-    st.error(f"Detail: {e}")
+    st.error(f"Detail: {e}")    
     st.error("Pastikan semua file .py (api_checker.py, analyzer.py, dll) ada di folder C:\\cek_fakta")
     st.stop()
 

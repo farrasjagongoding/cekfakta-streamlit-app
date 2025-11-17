@@ -1,5 +1,5 @@
 import streamlit as st
-from urllib.parse import urlparse # Diperlukan untuk Analisis Domain
+from urllib.parse import urlparse 
 
 # Impor fungsi PROSESOR baru kita
 try:
@@ -8,14 +8,14 @@ try:
         proses_google,
         proses_ai_lokal,
         proses_red_flags,
-        buat_kesimpulan, # <-- OTAK KE-6 (Kesimpulan)
+        buat_kesimpulan, 
         scrape_article_text
     )
 except ImportError:
     st.error("Gagal memuat modul 'utils.py' versi baru. Pastikan file sudah diperbarui.")
     st.stop()
 
-# --- DAFTAR PUTIH (Bisa Anda tambahkan sendiri) ---
+# --- List (Bisa Anda tambahkan sendiri) ---
 MEDIA_TERPERCAYA = [
     'kompas.com', 'detik.com', 'tempo.co', 'liputan6.com',
     'tirto.id', 'kumparan.com', 'antaranews.com', 'cnnindonesia.com',
@@ -23,7 +23,6 @@ MEDIA_TERPERCAYA = [
     'suara.com', 'jawapos.com', 'pikiran-rakyat.com', 'viva.co.id',
     'tribunnews.com', 'thejakartapost.com'
 ]
-# --------------------------------------------------
 
 st.header("Analisis Link Artikel")
 st.markdown("---")
