@@ -9,7 +9,10 @@ except ImportError:
     st.error("Gagal memuat modul utils.py. Pastikan file tersimpan di folder C:\\cek_fakta")
     st.stop()
 
+# ==========================
 #   DAFTAR RSS INDONESIA
+# ==========================
+# Ini adalah daftar yang SUDAH SEIMBANG (1 feed per portal)
 RSS_SOURCES = [
     # 1. CNN Indonesia (Nasional)
     "https://www.cnnindonesia.com/nasional/rss",
@@ -42,8 +45,11 @@ RSS_SOURCES = [
     "https://www.tribunnews.com/rss"
 ]
 
+
+# ==============================================
 #   FUNGSI PENGAMBILAN BERITA MULTI PORTAL
-@st.cache_data(ttl=600)
+# ==============================================
+@st.cache_data(ttl=600) # Cache hasil selama 10 menit
 def get_news(keyword=""):
     all_articles = []
 
@@ -66,6 +72,7 @@ def get_news(keyword=""):
                             "source": source
                         })
                 else:
+                    # Jika tidak ada keyword, tambahkan semua
                     all_articles.append({
                         "title": title,
                         "link": link,
@@ -79,7 +86,9 @@ def get_news(keyword=""):
     return all_articles
 
 
+# ======================
 #     UI TAMPILAN
+# ======================
 st.header("Berita Terbaru dari Berbagai Portal Indonesia")
 st.markdown("Cari berita terbaru dari berbagai platform nasional dan cek apakah sudah ada verifikasi faktanya.")
 st.markdown("---")
