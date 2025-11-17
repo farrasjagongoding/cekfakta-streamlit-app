@@ -9,47 +9,44 @@ except ImportError:
     st.error("Gagal memuat modul utils.py. Pastikan file tersimpan di folder C:\\cek_fakta")
     st.stop()
 
-# ==========================
 #   DAFTAR RSS INDONESIA
-# ==========================
-# Ini adalah daftar yang SUDAH SEIMBANG (1 feed per portal)
 RSS_SOURCES = [
-    # 1. CNN Indonesia (Nasional)
+    # CNN Indonesia
     "https://www.cnnindonesia.com/nasional/rss",
+    "https://www.cnnindonesia.com/ekonomi/rss",
+    "https://www.cnnindonesia.com/teknologi/rss",
 
-    # 2. Detik (News - Berita Utama)
+    # Detik
+    "https://rss.detik.com/index.php/detikcom",
     "https://rss.detik.com/index.php/detiknews",
 
-    # 3. Kompas (Nasional)
+    # Kompas
+    "https://news.kompas.com/rss",
     "https://news.kompas.com/rss/nasional",
 
-    # 4. Tempo (Nasional)
+    # Tempo
     "https://rss.tempo.co/nasional",
+    "https://rss.tempo.co/metro",
 
-    # 5. Viva (Berita Utama)
-    "https://www.viva.co.id/rss/berita-utama.rss",
+    # Viva
+    "https://www.viva.co.id/rss/politik",
 
-    # 6. Liputan6 (Berita Terbaru)
+    # Liputan6
     "https://feed.liputan6.com/news",
 
-    # 7. Okezone (Berita Utama)
+    # Okezone
     "https://sindikasi.okezone.com/index.php/rss/0/0/all",
 
-    # 8. JawaPos (Berita Utama)
+    # JawaPos
     "https://www.jawapos.com/rss",
 
-    # 9. Antara News (Berita Terkini)
-    "https://www.antaranews.com/rss/terkini",
-    
-    # 10. Tribunnews (Berita Utama)
-    "https://www.tribunnews.com/rss"
+    # Antara News
+    "https://www.antaranews.com/rss/top-news"
 ]
 
 
-# ==============================================
 #   FUNGSI PENGAMBILAN BERITA MULTI PORTAL
-# ==============================================
-@st.cache_data(ttl=600) # Cache hasil selama 10 menit
+@st.cache_data(ttl=600)
 def get_news(keyword=""):
     all_articles = []
 
@@ -72,7 +69,6 @@ def get_news(keyword=""):
                             "source": source
                         })
                 else:
-                    # Jika tidak ada keyword, tambahkan semua
                     all_articles.append({
                         "title": title,
                         "link": link,
@@ -86,9 +82,7 @@ def get_news(keyword=""):
     return all_articles
 
 
-# ======================
 #     UI TAMPILAN
-# ======================
 st.header("Berita Terbaru dari Berbagai Portal Indonesia")
 st.markdown("Cari berita terbaru dari berbagai platform nasional dan cek apakah sudah ada verifikasi faktanya.")
 st.markdown("---")
